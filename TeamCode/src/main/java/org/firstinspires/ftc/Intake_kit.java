@@ -1,10 +1,10 @@
-
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.CRServo; // CRServo handles continuous rotation wheels
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @TeleOp(name = "Intake_kit", group = "Linear OpMode")
 public class Intake_kit extends LinearOpMode {
@@ -22,20 +22,20 @@ public class Intake_kit extends LinearOpMode {
     public void runOpMode() {
 
 
-        back_left_motor   = hardwareMap.get(DcMotor.class, "left_drive");
-        back_right_motor  = hardwareMap.get(DcMotor.class, "right_drive");
+        back_left_motor   = hardwareMap.get(DcMotor.class, " back_left_motor");
+        back_right_motor  = hardwareMap.get(DcMotor.class, "back_right_motor");
 
-        intake_motor      = hardwareMap.get(DcMotor.class, "intakeMotor");
-        left_intake_servo  = hardwareMap.get(CRServo.class, "leftServo");
-        right_intake_servo = hardwareMap.get(CRServo.class, "rightServo");
-
-
-        back_left_motor.setDirection(DcMotor.Direction.REVERSE);
-        back_right_motor.setDirection(DcMotor.Direction.FORWARD);
+        intake_motor      = hardwareMap.get(DcMotor.class, "intake_motor");
+        left_intake_servo  = hardwareMap.get(CRServo.class, " left_intake_servo");
+        right_intake_servo = hardwareMap.get(CRServo.class, "right_intake_servo");
 
 
-        left_intake_servo.setDirection(CRServo.Direction.FORWARD);
-        right_intake_servo.setDirection(CRServo.Direction.REVERSE);
+        back_left_motor.setDirection(DcMotor.Direction.FORWARD);
+        back_right_motor.setDirection(DcMotor.Direction.REVERSE);
+
+
+        left_intake_servo.setDirection(CRServo.Direction.REVERSE);
+        right_intake_servo.setDirection(CRServo.Direction.FORWARD);
 
 
         telemetry.addData("Status", "Initialized & Ready!");
