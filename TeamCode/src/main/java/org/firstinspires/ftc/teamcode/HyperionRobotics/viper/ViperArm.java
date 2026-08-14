@@ -39,6 +39,7 @@ public class ViperArm {
 
         if (primary != null) {
             configureMotor(primary);
+            primary.setDirection(DcMotor.Direction.REVERSE);
         }
         
         if (secondary != null) {
@@ -93,7 +94,7 @@ public class ViperArm {
             return;
         }
         int next = Range.clip(
-                primary.getCurrentPosition() + (int) (power * 40),
+                primary.getCurrentPosition() + (int) (power * 90),
                 0,
                 RobotConstants.VIPER_MAX_TICKS);
         goToTicks(next);
@@ -135,5 +136,12 @@ public class ViperArm {
         Stage[] stages = Stage.values();
         int idx = Math.max(currentStage.ordinal() - 1, 0);
         setStage(stages[idx]);
+    }
+
+    public int getTargetTicks() {
+        return (primary != null) ? primary.getTargetPosition() : 0;
+    }
+    public int getPositionError() {
+        return getTargetTicks() - getCurrentTicks();
     }
 }
