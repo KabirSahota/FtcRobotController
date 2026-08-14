@@ -55,7 +55,7 @@ public class JarvisLimelight extends LinearOpMode {
 
     private static final double TAG_FAR_POWER = 0.42;
     private static final double TAG_MID_POWER = 0.24;
-    private static final double TAG_NEAR_POWER = 0.12;
+    private static final double TAG_NEAR_POWER = 0.24;
 
     private static final double TAG_STEER_KP = 0.020;
     private static final double TAG_MIN_STEER = 0.12;
@@ -104,8 +104,8 @@ public class JarvisLimelight extends LinearOpMode {
     private static final double BALL_CENTERED_TX_DEG = 4.0;
     private static final double BALL_CREEP_TX_DEG = 12.0;
 
-    private static final double BALL_FORWARD_POWER = 0.14;
-    private static final double BALL_CREEP_POWER = 0.08;
+    private static final double BALL_FORWARD_POWER = 0.48;
+    private static final double BALL_CREEP_POWER = 0.48;
 
     private static final double BALL_STEER_KP = 0.018;
     private static final double BALL_MIN_STEER = 0.12;
