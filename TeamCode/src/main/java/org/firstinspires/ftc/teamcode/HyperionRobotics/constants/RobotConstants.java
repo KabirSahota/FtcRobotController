@@ -77,8 +77,8 @@ public final class RobotConstants {
     public static final int VIPER_TOLERANCE = 25;
 
     // ---- Pinpoint ----
-
-    public static final String PINPOINT = "pinpoint";
+//used to be pinpoint
+    public static final String PINPOINT = "odo";
 
     public static final double PINPOINT_X_OFFSET_MM = 100.0;
     public static final double PINPOINT_Y_OFFSET_MM = -40.0;
