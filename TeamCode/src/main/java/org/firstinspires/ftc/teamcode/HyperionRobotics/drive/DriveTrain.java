@@ -30,11 +30,13 @@ public class DriveTrain {
 
         // Initialize all possible motor slots
         leftFront   = safeGet(hardwareMap, RobotConstants.LEFT_FRONT);
-        leftMiddle  = safeGet(hardwareMap, RobotConstants.LEFT_MIDDLE);
         leftBack    = safeGet(hardwareMap, RobotConstants.LEFT_BACK);
         rightFront  = safeGet(hardwareMap, RobotConstants.RIGHT_FRONT);
-        rightMiddle = safeGet(hardwareMap, RobotConstants.RIGHT_MIDDLE);
         rightBack   = safeGet(hardwareMap, RobotConstants.RIGHT_BACK);
+
+        rightMiddle = safeGet(hardwareMap, RobotConstants.RIGHT_MIDDLE);
+        leftMiddle  = safeGet(hardwareMap, RobotConstants.LEFT_MIDDLE);
+
 
         // Organize motors based on drivetrain type
         configureGroups();

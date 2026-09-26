@@ -2,8 +2,10 @@ package org.firstinspires.ftc.teamcode.HyperionRobotics;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+// import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp(name = "Hyperion BioBuzz Mecanum", group = "TeleOp")
 public class Shooter_bot extends LinearOpMode {
@@ -24,8 +26,10 @@ public class Shooter_bot extends LinearOpMode {
     private DcMotor intake;
     private DcMotor hogback;
 
-    private Servo windmillServo;
-    private Servo outerServo;
+    private CRServo windmillServo;
+    private CRServo outerServoLeft;
+    private CRServo outerServoRight;
+
 
     // R1 toggle
     private boolean intakeSystemOn = false;
@@ -46,8 +50,12 @@ public class Shooter_bot extends LinearOpMode {
         intake = hardwareMap.get(DcMotor.class, "intake");
         hogback = hardwareMap.get(DcMotor.class, "hogback");
 
-        windmillServo = hardwareMap.get(Servo.class, "windmillServo");
-        outerServo = hardwareMap.get(Servo.class, "outerServo");
+        windmillServo = hardwareMap.get(CRServo.class, "windmillServo");
+        outerServoLeft = hardwareMap.get(CRServo.class, "outerServoLeft");
+        outerServoRight = hardwareMap.get(CRServo.class, "outerServoRight");
+
+        // Reverse right intake servo so both spin together into the intake
+        outerServoRight.setDirection(CRServo.Direction.REVERSE);
 
         // =========================
         // MECANUM MOTOR DIRECTIONS
@@ -72,11 +80,12 @@ public class Shooter_bot extends LinearOpMode {
         hogback.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // =========================
-        // SERVO STARTING POSITIONS
+        // SERVO STARTING POSITIONS / POWERS
         // =========================
 
-        windmillServo.setPosition(0.0);
-        outerServo.setPosition(0.0);
+        windmillServo.setPower(0.0);
+        outerServoLeft.setPower(0.0);
+        outerServoRight.setPower(0.0);
 
         telemetry.addLine("HYPERION BIOBUZZ MECANUM READY");
         telemetry.addLine("Left Stick Y = Forward / Back");
@@ -86,6 +95,8 @@ public class Shooter_bot extends LinearOpMode {
         telemetry.update();
 
         waitForStart();
+
+        int loopCounter = 0;
 
         while (opModeIsActive()) {
 
@@ -98,17 +109,10 @@ public class Shooter_bot extends LinearOpMode {
             double rotation = gamepad1.right_stick_x;
 
             // Mecanum wheel calculations
-            double leftFrontPower =
-                    y + x + rotation;
-
-            double rightFrontPower =
-                    y - x - rotation;
-
-            double leftBackPower =
-                    y - x + rotation;
-
-            double rightBackPower =
-                    y + x - rotation;
+            double leftFrontPower  = y + x + rotation;
+            double rightFrontPower = y - x - rotation;
+            double leftBackPower   = y - x + rotation;
+            double rightBackPower  = y + x - rotation;
 
             // =========================
             // NORMALIZE
@@ -167,11 +171,12 @@ public class Shooter_bot extends LinearOpMode {
                 // Hogback wheel
                 hogback.setPower(1.0);
 
-                // Windmill
-                windmillServo.setPosition(1.0);
+                // Windmill position servo
+                windmillServo.setPower(-0.5);
 
-                // Outer servo
-                outerServo.setPosition(1.0);
+                // Continuous rotation intake servos
+                outerServoLeft.setPower(1.0);
+                outerServoRight.setPower(1.0);
 
             } else {
 
@@ -181,26 +186,29 @@ public class Shooter_bot extends LinearOpMode {
                 // Stop hogback
                 hogback.setPower(0.0);
 
-                // Return windmill
-                windmillServo.setPosition(0.0);
+                // Return windmill position servo
+                windmillServo.setPower(0.0);
 
-                // Return outer servo
-                outerServo.setPosition(0.0);
+                // Stop continuous rotation intake servos
+                outerServoLeft.setPower(0.0);
+                outerServoRight.setPower(0.0);
             }
 
             // =========================
             // TELEMETRY
             // =========================
 
+            telemetry.addData("Loop Count", loopCounter++);
+            telemetry.addData("Stick X", x);
+            telemetry.addData("Stick Y", y);
+            telemetry.addData("Rotation", rotation);
+
             telemetry.addData("Front Left", leftFrontPower);
             telemetry.addData("Front Right", rightFrontPower);
             telemetry.addData("Back Left", leftBackPower);
             telemetry.addData("Back Right", rightBackPower);
 
-            telemetry.addData(
-                    "Intake System",
-                    intakeSystemOn ? "ON" : "OFF"
-            );
+            telemetry.addData("Intake System", intakeSystemOn ? "ON" : "OFF");
 
             telemetry.update();
         }

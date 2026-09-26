@@ -34,10 +34,13 @@ import org.firstinspires.ftc.teamcode.HyperionRobotics.constants.RobotConstants;
  *   Keep a hand near STOP.
  *   Use only short movements at first.
  */
+/*
 @TeleOp(
         name = "Viper Motor Encoder Debug",
         group = "Diagnostics"
 )
+*/
+
 public class ViperMotorEncoderDebug extends LinearOpMode {
 
     private DcMotorEx viperMotor;
