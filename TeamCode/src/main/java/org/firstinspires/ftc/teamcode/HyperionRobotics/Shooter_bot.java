@@ -5,10 +5,25 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-// import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
-@TeleOp(name = "Hyperion BioBuzz Mecanum", group = "TeleOp")
+@TeleOp(name = "Artemis BioBuzz Mecanum", group = "TeleOp")
 public class Shooter_bot extends LinearOpMode {
+
+    // Windmill CRServo state machine variables (infinite rotate-stop loop)
+    private enum WindmillState {
+        OFF,
+        TURNING,
+        PAUSING
+    }
+    private WindmillState windmillState = WindmillState.OFF;
+    private ElapsedTime windmillTimer = new ElapsedTime();
+
+    private static final double WINDMILL_SPEED = -0.2;
+    private static final double TURN_DURATION = 1.5;  // seconds rotating
+    private static final double PAUSE_DURATION = 0.25; // seconds stopped
+
+
 
     // =========================
     // DRIVE MOTORS
@@ -108,6 +123,7 @@ public class Shooter_bot extends LinearOpMode {
             double x = gamepad1.left_stick_x;
             double rotation = gamepad1.right_stick_x;
 
+
             // Mecanum wheel calculations
             double leftFrontPower  = y + x + rotation;
             double rightFrontPower = y - x - rotation;
@@ -171,12 +187,35 @@ public class Shooter_bot extends LinearOpMode {
                 // Hogback wheel
                 hogback.setPower(1.0);
 
-                // Windmill position servo
-                windmillServo.setPower(-0.5);
-
                 // Continuous rotation intake servos
                 outerServoLeft.setPower(1.0);
                 outerServoRight.setPower(1.0);
+
+                // Windmill infinite rotate-stop loop
+                switch (windmillState) {
+                    case OFF:
+                        windmillTimer.reset();
+                        windmillState = WindmillState.TURNING;
+                        windmillServo.setPower(WINDMILL_SPEED);
+                        break;
+
+                    case TURNING:
+                        windmillServo.setPower(WINDMILL_SPEED);
+                        if (windmillTimer.seconds() >= TURN_DURATION) {
+                            windmillServo.setPower(0.0);
+                            windmillTimer.reset();
+                            windmillState = WindmillState.PAUSING;
+                        }
+                        break;
+
+                    case PAUSING:
+                        windmillServo.setPower(0.0);
+                        if (windmillTimer.seconds() >= PAUSE_DURATION) {
+                            windmillTimer.reset();
+                            windmillState = WindmillState.TURNING; // Loop back to turning!
+                        }
+                        break;
+                }
 
             } else {
 
@@ -186,8 +225,9 @@ public class Shooter_bot extends LinearOpMode {
                 // Stop hogback
                 hogback.setPower(0.0);
 
-                // Return windmill position servo
+                // Stop windmill CRServo and reset state
                 windmillServo.setPower(0.0);
+                windmillState = WindmillState.OFF;
 
                 // Stop continuous rotation intake servos
                 outerServoLeft.setPower(0.0);
