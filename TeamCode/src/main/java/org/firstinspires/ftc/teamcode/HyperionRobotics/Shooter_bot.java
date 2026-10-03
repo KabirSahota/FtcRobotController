@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp(name = "Artemis BioBuzz Mecanum", group = "TeleOp")
@@ -22,8 +21,6 @@ public class Shooter_bot extends LinearOpMode {
     private static final double WINDMILL_SPEED = -0.2;
     private static final double TURN_DURATION = 1.5;  // seconds rotating
     private static final double PAUSE_DURATION = 0.25; // seconds stopped
-
-
 
     // =========================
     // DRIVE MOTORS
@@ -45,7 +42,6 @@ public class Shooter_bot extends LinearOpMode {
     private CRServo outerServoLeft;
     private CRServo outerServoRight;
 
-
     // R1 toggle
     private boolean intakeSystemOn = false;
     private boolean lastR1 = false;
@@ -53,10 +49,7 @@ public class Shooter_bot extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        // =========================
-        // HARDWARE CONFIG
-        // =========================
-
+        // Based on H/W Config, initialize the S/W variables for the rest of the code to work with.
         leftFront = hardwareMap.get(DcMotor.class, "leftFront");
         rightFront = hardwareMap.get(DcMotor.class, "rightFront");
         leftBack = hardwareMap.get(DcMotor.class, "leftBack");
@@ -71,37 +64,35 @@ public class Shooter_bot extends LinearOpMode {
 
         // Reverse right intake servo so both spin together into the intake
         outerServoRight.setDirection(CRServo.Direction.REVERSE);
+        /*
+         * When the H/W gets powered up, we want it to be in a known/good state. There's a bunch of
+         * methods we can call into in order to do that. Each type of H/W part needs a different set
+         * of init routine to be called into.
+         */
 
-        // =========================
-        // MECANUM MOTOR DIRECTIONS
-        // =========================
-
+        // Init for the Mechanum wheels.
         leftFront.setDirection(DcMotor.Direction.REVERSE);
         leftBack.setDirection(DcMotor.Direction.REVERSE);
-
         rightFront.setDirection(DcMotor.Direction.FORWARD);
         rightBack.setDirection(DcMotor.Direction.FORWARD);
 
-        // =========================
-        // BRAKING
-        // =========================
-
+        // Braking
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         hogback.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        // =========================
-        // SERVO STARTING POSITIONS / POWERS
-        // =========================
-
+        /*
+         * Servo inits are simpler. However, more advanced modes can be be programmed with the
+         * servo programmer outside the code.
+         */
         windmillServo.setPower(0.0);
         outerServoLeft.setPower(0.0);
         outerServoRight.setPower(0.0);
 
+        //  Print out the controls
         telemetry.addLine("HYPERION BIOBUZZ MECANUM READY");
         telemetry.addLine("Left Stick Y = Forward / Back");
         telemetry.addLine("Left Stick X = Strafe");
@@ -112,13 +103,7 @@ public class Shooter_bot extends LinearOpMode {
         waitForStart();
 
         int loopCounter = 0;
-
         while (opModeIsActive()) {
-
-            // =========================
-            // MECANUM DRIVE
-            // =========================
-
             double y = -gamepad1.left_stick_y;
             double x = gamepad1.left_stick_x;
             double rotation = gamepad1.right_stick_x;
