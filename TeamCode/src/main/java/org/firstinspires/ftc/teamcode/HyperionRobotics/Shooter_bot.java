@@ -115,10 +115,11 @@ public class Shooter_bot extends LinearOpMode {
             double leftBackPower   = y - x + rotation;
             double rightBackPower  = y + x - rotation;
 
-            // =========================
-            // NORMALIZE
-            // =========================
-
+            /*
+             * The values on the gamepad cannnot directly be input to the motor. They need
+             * to be relative values to the maximum value of power that can be applied to the
+             * motor which is 1.0.
+             */
             double maxPower = Math.max(
                     1.0,
                     Math.max(
@@ -138,19 +139,15 @@ public class Shooter_bot extends LinearOpMode {
             leftBackPower /= maxPower;
             rightBackPower /= maxPower;
 
-            // =========================
             // SET DRIVE POWER
-            // =========================
-
             leftFront.setPower(leftFrontPower);
             rightFront.setPower(rightFrontPower);
             leftBack.setPower(leftBackPower);
             rightBack.setPower(rightBackPower);
 
-            // =========================
-            // R1 TOGGLE
-            // =========================
-
+            /*
+             * Process the input from the bumper now.
+             */
             boolean currentR1 = gamepad1.right_bumper;
 
             // Only toggle once per button press
