@@ -167,7 +167,7 @@ public class Shooter_bot extends LinearOpMode {
                 intake.setPower(1.0);
 
                 // Hogback wheel
-                hogback.setPower(1.0);
+                hogback.setPower(0.48);
 
                 // Continuous rotation intake servos
                 outerServoLeft.setPower(1.0);
