@@ -37,6 +37,8 @@ public class Shooter_bot extends LinearOpMode {
 
     private DcMotor intake;
     private DcMotor hogback;
+    // double hopBackTargetRPM = 3600;
+    // double hopBackTargetTPS =
 
     private CRServo windmillServo;
     private CRServo outerServoLeft;
@@ -108,7 +110,6 @@ public class Shooter_bot extends LinearOpMode {
             double x = gamepad1.left_stick_x;
             double rotation = gamepad1.right_stick_x;
 
-
             // Mecanum wheel calculations
             double leftFrontPower  = y + x + rotation;
             double rightFrontPower = y - x - rotation;
@@ -139,11 +140,18 @@ public class Shooter_bot extends LinearOpMode {
             leftBackPower /= maxPower;
             rightBackPower /= maxPower;
 
+            /*
+             * XXX: Artifically deflate the max power to make the robot go slower while we
+             * learn how to drive the robot.
+             */
             // SET DRIVE POWER
-            leftFront.setPower(leftFrontPower);
-            rightFront.setPower(rightFrontPower);
-            leftBack.setPower(leftBackPower);
-            rightBack.setPower(rightBackPower);
+            leftFront.setPower(leftFrontPower/3);
+            // XXX: Fix this. The polarity of rightFrontPower needed to be reversed to get
+            // the wheels to go straight. Look at the calculation above to make sure this does
+            // not need to be don explicitly.
+            rightFront.setPower(-rightFrontPower/3);
+            leftBack.setPower(leftBackPower/3);
+            rightBack.setPower(rightBackPower/3);
 
             /*
              * Process the input from the bumper now.
