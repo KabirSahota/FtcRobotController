@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@TeleOp(name = "Artemis BioBuzz Mecanum", group = "TeleOp")
+@TeleOp(name = "Artemis main teleop", group = "TeleOp")
 public class Shooter_bot extends LinearOpMode {
 
     // Windmill CRServo state machine variables (infinite rotate-stop loop)
@@ -45,8 +45,10 @@ public class Shooter_bot extends LinearOpMode {
     private CRServo outerServoRight;
 
     // R1 toggle
+    private boolean outakeSystemOn = false;
     private boolean intakeSystemOn = false;
     private boolean lastR1 = false;
+    private boolean lastL1 = false;
 
     @Override
     public void runOpMode() {
@@ -73,6 +75,7 @@ public class Shooter_bot extends LinearOpMode {
          */
 
         // Init for the Mechanum wheels.
+
         leftFront.setDirection(DcMotor.Direction.REVERSE);
         leftBack.setDirection(DcMotor.Direction.REVERSE);
         rightFront.setDirection(DcMotor.Direction.FORWARD);
@@ -99,7 +102,8 @@ public class Shooter_bot extends LinearOpMode {
         telemetry.addLine("Left Stick Y = Forward / Back");
         telemetry.addLine("Left Stick X = Strafe");
         telemetry.addLine("Right Stick X = Turn");
-        telemetry.addLine("R1 = Toggle Intake System");
+        telemetry.addLine("R1 = Toggle Outake System");
+        telemetry.addLine("L1 = Toggle Intake System");
         telemetry.update();
 
         waitForStart();
@@ -145,13 +149,13 @@ public class Shooter_bot extends LinearOpMode {
              * learn how to drive the robot.
              */
             // SET DRIVE POWER
-            leftFront.setPower(leftFrontPower/3);
             // XXX: Fix this. The polarity of rightFrontPower needed to be reversed to get
             // the wheels to go straight. Look at the calculation above to make sure this does
-            // not need to be don explicitly.
-            rightFront.setPower(-rightFrontPower/3);
-            leftBack.setPower(leftBackPower/3);
-            rightBack.setPower(rightBackPower/3);
+            // not need to be done explicitly.
+            leftFront.setPower(leftFrontPower/1.7);
+            rightFront.setPower(-rightFrontPower/1.7);
+            leftBack.setPower(leftBackPower/1.7);
+            rightBack.setPower(rightBackPower/1.7);
 
             /*
              * Process the input from the bumper now.
@@ -160,26 +164,14 @@ public class Shooter_bot extends LinearOpMode {
 
             // Only toggle once per button press
             if (currentR1 && !lastR1) {
-                intakeSystemOn = !intakeSystemOn;
+                outakeSystemOn = !outakeSystemOn;
             }
-
             lastR1 = currentR1;
 
-            // =========================
-            // INTAKE SYSTEM
-            // =========================
-
-            if (intakeSystemOn) {
-
-                // Main intake
-                intake.setPower(1.0);
-
+            // Outtake SYSTEM
+            if (outakeSystemOn) {
                 // Hogback wheel
                 hogback.setPower(0.48);
-
-                // Continuous rotation intake servos
-                outerServoLeft.setPower(1.0);
-                outerServoRight.setPower(1.0);
 
                 // Windmill infinite rotate-stop loop
                 switch (windmillState) {
@@ -206,12 +198,7 @@ public class Shooter_bot extends LinearOpMode {
                         }
                         break;
                 }
-
             } else {
-
-                // Stop intake
-                intake.setPower(0.0);
-
                 // Stop hogback
                 hogback.setPower(0.0);
 
@@ -220,6 +207,25 @@ public class Shooter_bot extends LinearOpMode {
                 windmillState = WindmillState.OFF;
 
                 // Stop continuous rotation intake servos
+                outerServoLeft.setPower(0.0);
+                outerServoRight.setPower(0.0);
+            }
+
+            // Run the intake system based on the left bumper
+            boolean currentL1 = gamepad1.left_bumper;
+
+            if (currentL1 && !lastL1) {
+                intakeSystemOn = !intakeSystemOn;
+            }
+
+            lastL1 = currentL1;
+            if (intakeSystemOn) {
+                intake.setPower(1.0);
+                // Continuous rotation intake servos
+                outerServoLeft.setPower(1.0);
+                outerServoRight.setPower(1.0);
+            } else {
+                intake.setPower(0.0);
                 outerServoLeft.setPower(0.0);
                 outerServoRight.setPower(0.0);
             }
@@ -239,6 +245,7 @@ public class Shooter_bot extends LinearOpMode {
             telemetry.addData("Back Right", rightBackPower);
 
             telemetry.addData("Intake System", intakeSystemOn ? "ON" : "OFF");
+            telemetry.addData("Outtake System", outakeSystemOn ? "ON" : "OFF");
 
             telemetry.update();
         }
