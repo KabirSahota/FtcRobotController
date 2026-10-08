@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp(name = "Artemis main teleop", group = "TeleOp")
@@ -36,9 +37,17 @@ public class Shooter_bot extends LinearOpMode {
     // =========================
 
     private DcMotor intake;
-    private DcMotor hogback;
-    // double hopBackTargetRPM = 3600;
-    // double hopBackTargetTPS =
+    private DcMotorEx hogback;
+
+    // Outtake (hogback) velocity control.
+    // true  = use encoder-based setVelocity() to hold OUTTAKE_TARGET_RPM
+    // false = use the original open-loop setPower()
+    private static final boolean VelocityBasedOuttake = true;
+    private static final double OUTTAKE_TARGET_RPM = 2750;
+    // Set this to the encoder ticks per revolution of the hogback motor. GoBilda 5203 series motor 28 Ticks for one revolution
+    private static final double HOGBACK_TICKS_PER_REV = 28;
+    // Windmill won't start until the hogback is within this many RPM of the target
+    private static final double OUTTAKE_RPM_TOLERANCE = 100;
 
     private CRServo windmillServo;
     private CRServo outerServoLeft;
@@ -60,7 +69,7 @@ public class Shooter_bot extends LinearOpMode {
         rightBack = hardwareMap.get(DcMotor.class, "rightBack");
 
         intake = hardwareMap.get(DcMotor.class, "intake");
-        hogback = hardwareMap.get(DcMotor.class, "hogback");
+        hogback = hardwareMap.get(DcMotorEx.class, "hogback");
 
         windmillServo = hardwareMap.get(CRServo.class, "windmillServo");
         outerServoLeft = hardwareMap.get(CRServo.class, "outerServoLeft");
@@ -88,6 +97,11 @@ public class Shooter_bot extends LinearOpMode {
         rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         hogback.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        // Velocity control needs the encoder to be used by the motor controller.
+        if (VelocityBasedOuttake) {
+            hogback.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
 
         /*
          * Servo inits are simpler. However, more advanced modes can be be programmed with the
@@ -168,17 +182,30 @@ public class Shooter_bot extends LinearOpMode {
             }
             lastR1 = currentR1;
 
+            // Measured hogback speed (ticks/sec -> RPM)
+            double hogbackRpm = hogback.getVelocity() * 60.0 / HOGBACK_TICKS_PER_REV;
+            boolean hogbackAtTargetRpm =
+                    Math.abs(hogbackRpm - OUTTAKE_TARGET_RPM) <= OUTTAKE_RPM_TOLERANCE;
+
             // Outtake SYSTEM
             if (outakeSystemOn) {
                 // Hogback wheel
-                hogback.setPower(0.48);
+                if (VelocityBasedOuttake) {
+                    // Convert RPM to encoder ticks per second and let the encoder hold it
+                    hogback.setVelocity(OUTTAKE_TARGET_RPM * HOGBACK_TICKS_PER_REV / 60.0);
+                } else {
+                    hogback.setPower(0.48);
+                }
 
                 // Windmill infinite rotate-stop loop
                 switch (windmillState) {
                     case OFF:
-                        windmillTimer.reset();
-                        windmillState = WindmillState.TURNING;
-                        windmillServo.setPower(WINDMILL_SPEED);
+                        // With velocity control, wait until the hogback reaches the target RPM
+                        if (!VelocityBasedOuttake || hogbackAtTargetRpm) {
+                            windmillTimer.reset();
+                            windmillState = WindmillState.TURNING;
+                            windmillServo.setPower(WINDMILL_SPEED);
+                        }
                         break;
 
                     case TURNING:
@@ -246,6 +273,8 @@ public class Shooter_bot extends LinearOpMode {
 
             telemetry.addData("Intake System", intakeSystemOn ? "ON" : "OFF");
             telemetry.addData("Outtake System", outakeSystemOn ? "ON" : "OFF");
+            telemetry.addData("Hogback RPM", hogbackRpm);
+            telemetry.addData("Hogback Target RPM", OUTTAKE_TARGET_RPM);
 
             telemetry.update();
         }
