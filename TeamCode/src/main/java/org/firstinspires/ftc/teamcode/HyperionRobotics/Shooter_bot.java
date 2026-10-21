@@ -57,6 +57,7 @@ public class Shooter_bot extends LinearOpMode {
     private boolean outakeSystemOn = false;
     private boolean intakeSystemOn = false;
     private boolean lastR1 = false;
+    private boolean lastR2 = false;
     private boolean lastL1 = false;
 
     @Override
@@ -197,33 +198,40 @@ public class Shooter_bot extends LinearOpMode {
                     hogback.setPower(0.48);
                 }
 
-                // Windmill infinite rotate-stop loop
-                switch (windmillState) {
-                    case OFF:
-                        // With velocity control, wait until the hogback reaches the target RPM
-                        if (!VelocityBasedOuttake || hogbackAtTargetRpm) {
-                            windmillTimer.reset();
-                            windmillState = WindmillState.TURNING;
+                //emergency windmill reversal button if it jams
+                boolean currentR2 = gamepad1.a;
+                if (currentR2 && !lastR2) {
+                    reversewindmill = !reversewindmill;
+                }
+                lastR2 = currentR2;
+                if (reversewindmill)  {
+                    windmillServo.setPower(0.2);
+                } else {
+                    // Windmill infinite rotate-stop loop
+                    switch (windmillState) {
+                        case OFF:
+                            // With velocity control, wait until the hogback reaches the target RPM
+                            if (!VelocityBasedOuttake || hogbackAtTargetRpm) {
+                                windmillTimer.reset();
+                                windmillState = WindmillState.TURNING;
                             windmillServo.setPower(WINDMILL_SPEED);
                         }
                         break;
+                            if (windmillTimer.seconds() >= TURN_DURATION) {
+                                windmillServo.setPower(0.0);
+                                windmillTimer.reset();
+                                windmillState = WindmillState.PAUSING;
+                            }
+                            break;
 
-                    case TURNING:
-                        windmillServo.setPower(WINDMILL_SPEED);
-                        if (windmillTimer.seconds() >= TURN_DURATION) {
+                        case PAUSING:
                             windmillServo.setPower(0.0);
-                            windmillTimer.reset();
-                            windmillState = WindmillState.PAUSING;
-                        }
-                        break;
-
-                    case PAUSING:
-                        windmillServo.setPower(0.0);
-                        if (windmillTimer.seconds() >= PAUSE_DURATION) {
-                            windmillTimer.reset();
-                            windmillState = WindmillState.TURNING; // Loop back to turning!
-                        }
-                        break;
+                            if (windmillTimer.seconds() >= PAUSE_DURATION) {
+                                windmillTimer.reset();
+                                windmillState = WindmillState.TURNING; // Loop back to turning!
+                            }
+                            break;
+                    }
                 }
             } else {
                 // Stop hogback
@@ -247,7 +255,7 @@ public class Shooter_bot extends LinearOpMode {
 
             lastL1 = currentL1;
             if (intakeSystemOn) {
-                intake.setPower(1.0);
+                intake.setPower(0.5);
                 // Continuous rotation intake servos
                 outerServoLeft.setPower(1.0);
                 outerServoRight.setPower(1.0);
@@ -264,6 +272,7 @@ public class Shooter_bot extends LinearOpMode {
             telemetry.addData("Loop Count", loopCounter++);
             telemetry.addData("Stick X", x);
             telemetry.addData("Stick Y", y);
+            telemetry.addData("reversing the windmill is x button");
             telemetry.addData("Rotation", rotation);
 
             telemetry.addData("Front Left", leftFrontPower);
