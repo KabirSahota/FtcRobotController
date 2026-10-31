@@ -19,8 +19,8 @@ public class Shooter_bot extends LinearOpMode {
     private WindmillState windmillState = WindmillState.OFF;
     private ElapsedTime windmillTimer = new ElapsedTime();
 
-    private static final double WINDMILL_SPEED = -0.2;
-    private static final double TURN_DURATION = 1.5;  // seconds rotating
+    private static final double WINDMILL_SPEED = -0.30;
+    private static final double TURN_DURATION = 1.0;  // seconds rotating
     private static final double PAUSE_DURATION = 0.25; // seconds stopped
 
     // =========================
@@ -43,7 +43,7 @@ public class Shooter_bot extends LinearOpMode {
     // true  = use encoder-based setVelocity() to hold OUTTAKE_TARGET_RPM
     // false = use the original open-loop setPower()
     private static final boolean VelocityBasedOuttake = true;
-    private static final double OUTTAKE_TARGET_RPM = 2750;
+    private static final double OUTTAKE_TARGET_RPM = 2950;
     // Set this to the encoder ticks per revolution of the hogback motor. GoBilda 5203 series motor 28 Ticks for one revolution
     private static final double HOGBACK_TICKS_PER_REV = 28;
     // Windmill won't start until the hogback is within this many RPM of the target
@@ -56,6 +56,7 @@ public class Shooter_bot extends LinearOpMode {
     // R1 toggle
     private boolean outakeSystemOn = false;
     private boolean intakeSystemOn = false;
+    private boolean reversewindmill = false;
     private boolean lastR1 = false;
     private boolean lastR2 = false;
     private boolean lastL1 = false;
@@ -160,17 +161,17 @@ public class Shooter_bot extends LinearOpMode {
             rightBackPower /= maxPower;
 
             /*
-             * XXX: Artifically deflate the max power to make the robot go slower while we
+             * XXX: Artificially deflate the max power to make the robot go slower while we
              * learn how to drive the robot.
              */
             // SET DRIVE POWER
             // XXX: Fix this. The polarity of rightFrontPower needed to be reversed to get
             // the wheels to go straight. Look at the calculation above to make sure this does
             // not need to be done explicitly.
-            leftFront.setPower(leftFrontPower/1.7);
-            rightFront.setPower(-rightFrontPower/1.7);
-            leftBack.setPower(leftBackPower/1.7);
-            rightBack.setPower(rightBackPower/1.7);
+            leftFront.setPower(leftFrontPower * 0.4);
+            rightFront.setPower(-rightFrontPower * 0.4);
+            leftBack.setPower(leftBackPower/ 0.4);
+            rightBack.setPower(rightBackPower/ 0.4);
 
             /*
              * Process the input from the bumper now.
@@ -195,7 +196,7 @@ public class Shooter_bot extends LinearOpMode {
                     // Convert RPM to encoder ticks per second and let the encoder hold it
                     hogback.setVelocity(OUTTAKE_TARGET_RPM * HOGBACK_TICKS_PER_REV / 60.0);
                 } else {
-                    hogback.setPower(0.48);
+                    hogback.setPower(0.8);
                 }
 
                 //emergency windmill reversal button if it jams
@@ -205,8 +206,11 @@ public class Shooter_bot extends LinearOpMode {
                 }
                 lastR2 = currentR2;
                 if (reversewindmill)  {
-                    windmillServo.setPower(0.2);
+                    windmillServo.setPower(-1.0);
                 } else {
+                    windmillServo.setPower(1.0);
+
+                    /*
                     // Windmill infinite rotate-stop loop
                     switch (windmillState) {
                         case OFF:
@@ -214,13 +218,17 @@ public class Shooter_bot extends LinearOpMode {
                             if (!VelocityBasedOuttake || hogbackAtTargetRpm) {
                                 windmillTimer.reset();
                                 windmillState = WindmillState.TURNING;
-                            windmillServo.setPower(WINDMILL_SPEED);
-                        }
-                        break;
+                                windmillServo.setPower(WINDMILL_SPEED);
+                            }
+                            break;
+
+                        case TURNING:
                             if (windmillTimer.seconds() >= TURN_DURATION) {
                                 windmillServo.setPower(0.0);
                                 windmillTimer.reset();
                                 windmillState = WindmillState.PAUSING;
+                            } else {
+                                windmillServo.setPower(WINDMILL_SPEED);
                             }
                             break;
 
@@ -232,6 +240,7 @@ public class Shooter_bot extends LinearOpMode {
                             }
                             break;
                     }
+                     */
                 }
             } else {
                 // Stop hogback
@@ -255,7 +264,7 @@ public class Shooter_bot extends LinearOpMode {
 
             lastL1 = currentL1;
             if (intakeSystemOn) {
-                intake.setPower(0.5);
+                intake.setPower(1.0);
                 // Continuous rotation intake servos
                 outerServoLeft.setPower(1.0);
                 outerServoRight.setPower(1.0);
@@ -272,7 +281,7 @@ public class Shooter_bot extends LinearOpMode {
             telemetry.addData("Loop Count", loopCounter++);
             telemetry.addData("Stick X", x);
             telemetry.addData("Stick Y", y);
-            telemetry.addData("reversing the windmill is x button");
+            telemetry.addLine("reversing the windmill is x button");
             telemetry.addData("Rotation", rotation);
 
             telemetry.addData("Front Left", leftFrontPower);
