@@ -169,7 +169,7 @@ public class Shooter_bot extends LinearOpMode {
             // the wheels to go straight. Look at the calculation above to make sure this does
             // not need to be done explicitly.
             leftFront.setPower(leftFrontPower * 0.4);
-            rightFront.setPower(-rightFrontPower * 0.4);
+            rightFront.setPower(rightFrontPower * 0.4);
             leftBack.setPower(leftBackPower/ 0.4);
             rightBack.setPower(rightBackPower/ 0.4);
 
@@ -209,38 +209,6 @@ public class Shooter_bot extends LinearOpMode {
                     windmillServo.setPower(-1.0);
                 } else {
                     windmillServo.setPower(1.0);
-
-                    /*
-                    // Windmill infinite rotate-stop loop
-                    switch (windmillState) {
-                        case OFF:
-                            // With velocity control, wait until the hogback reaches the target RPM
-                            if (!VelocityBasedOuttake || hogbackAtTargetRpm) {
-                                windmillTimer.reset();
-                                windmillState = WindmillState.TURNING;
-                                windmillServo.setPower(WINDMILL_SPEED);
-                            }
-                            break;
-
-                        case TURNING:
-                            if (windmillTimer.seconds() >= TURN_DURATION) {
-                                windmillServo.setPower(0.0);
-                                windmillTimer.reset();
-                                windmillState = WindmillState.PAUSING;
-                            } else {
-                                windmillServo.setPower(WINDMILL_SPEED);
-                            }
-                            break;
-
-                        case PAUSING:
-                            windmillServo.setPower(0.0);
-                            if (windmillTimer.seconds() >= PAUSE_DURATION) {
-                                windmillTimer.reset();
-                                windmillState = WindmillState.TURNING; // Loop back to turning!
-                            }
-                            break;
-                    }
-                     */
                 }
             } else {
                 // Stop hogback
