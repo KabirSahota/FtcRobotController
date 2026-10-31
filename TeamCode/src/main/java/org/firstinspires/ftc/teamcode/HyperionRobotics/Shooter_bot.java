@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp(name = "Artemis main teleop", group = "TeleOp")
@@ -56,7 +57,7 @@ public class Shooter_bot extends LinearOpMode {
     // R1 toggle
     private boolean outakeSystemOn = false;
     private boolean intakeSystemOn = false;
-    private boolean reversewindmill = false;
+    private boolean reverseOuttake = false;
     private boolean lastR1 = false;
     private boolean lastR2 = false;
     private boolean lastL1 = false;
@@ -85,14 +86,13 @@ public class Shooter_bot extends LinearOpMode {
          * of init routine to be called into.
          */
 
-        // Init for the Mechanum wheels.
+        // Init for the Mecanum wheels.
 
         leftFront.setDirection(DcMotor.Direction.REVERSE);
         leftBack.setDirection(DcMotor.Direction.REVERSE);
         rightFront.setDirection(DcMotor.Direction.FORWARD);
         rightBack.setDirection(DcMotor.Direction.FORWARD);
 
-        // Braking
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -160,18 +160,11 @@ public class Shooter_bot extends LinearOpMode {
             leftBackPower /= maxPower;
             rightBackPower /= maxPower;
 
-            /*
-             * XXX: Artificially deflate the max power to make the robot go slower while we
-             * learn how to drive the robot.
-             */
             // SET DRIVE POWER
-            // XXX: Fix this. The polarity of rightFrontPower needed to be reversed to get
-            // the wheels to go straight. Look at the calculation above to make sure this does
-            // not need to be done explicitly.
-            leftFront.setPower(leftFrontPower * 0.4);
-            rightFront.setPower(rightFrontPower * 0.4);
-            leftBack.setPower(leftBackPower/ 0.4);
-            rightBack.setPower(rightBackPower/ 0.4);
+            leftFront.setPower(leftFrontPower * 0.8);
+            rightFront.setPower(rightFrontPower * 0.8);
+            leftBack.setPower(leftBackPower * 0.8);
+            rightBack.setPower(rightBackPower * 0.8);
 
             /*
              * Process the input from the bumper now.
@@ -191,24 +184,25 @@ public class Shooter_bot extends LinearOpMode {
 
             // Outtake SYSTEM
             if (outakeSystemOn) {
-                // Hogback wheel
-                if (VelocityBasedOuttake) {
-                    // Convert RPM to encoder ticks per second and let the encoder hold it
-                    hogback.setVelocity(OUTTAKE_TARGET_RPM * HOGBACK_TICKS_PER_REV / 60.0);
-                } else {
-                    hogback.setPower(0.8);
-                }
-
-                //emergency windmill reversal button if it jams
+                // Emergency outtake & windmill reversal button if it jams
                 boolean currentR2 = gamepad1.a;
                 if (currentR2 && !lastR2) {
-                    reversewindmill = !reversewindmill;
+                    reverseOuttake = !reverseOuttake;
                 }
                 lastR2 = currentR2;
-                if (reversewindmill)  {
+
+                if (reverseOuttake)  {
                     windmillServo.setPower(-1.0);
+                    hogback.setPower(-0.5);
                 } else {
                     windmillServo.setPower(1.0);
+                    // Hogback wheel
+                    if (VelocityBasedOuttake) {
+                        // Convert RPM to encoder ticks per second and let the encoder hold it
+                        hogback.setVelocity(OUTTAKE_TARGET_RPM * HOGBACK_TICKS_PER_REV / 60.0);
+                    } else {
+                        hogback.setPower(0.8);
+                    }
                 }
             } else {
                 // Stop hogback

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.HyperionRobotics.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.HyperionRobotics.HyperionRobot;
 import org.firstinspires.ftc.teamcode.HyperionRobotics.constants.RobotConstants;
@@ -14,78 +15,48 @@ import org.firstinspires.ftc.teamcode.HyperionRobotics.viper.ViperArm;
 @Autonomous(name = "Hyperion Auto Drive", group = "Hyperion")
 public class HyperionAutoDrive extends LinearOpMode {
     private HyperionRobot robot;
+    // =========================
+    // DRIVE MOTORS
+    // =========================
+
+    private DcMotor leftFront;
+    private DcMotor rightFront;
+    private DcMotor leftBack;
+    private DcMotor rightBack;
+
 
     @Override
     public void runOpMode() {
-        robot = new HyperionRobot(hardwareMap);
-        robot.odometry.setPose(0, 0, 0);
+        leftFront.setDirection(DcMotor.Direction.REVERSE);
+        leftBack.setDirection(DcMotor.Direction.REVERSE);
+        rightFront.setDirection(DcMotor.Direction.FORWARD);
+        rightBack.setDirection(DcMotor.Direction.FORWARD);
 
-        telemetry.addLine("Hyperion Auto ready");
-        telemetry.update();
+        // Based on H/W Config, initialize the S/W variables for the rest of the code to work with.
+        leftFront = hardwareMap.get(DcMotor.class, "leftFront");
+        rightFront = hardwareMap.get(DcMotor.class, "rightFront");
+        leftBack = hardwareMap.get(DcMotor.class, "leftBack");
+        rightBack = hardwareMap.get(DcMotor.class, "rightBack");
+
+
+        leftBack.setPower((0.4));
+        rightBack.setPower(0.4);
+        leftFront.setPower(0.4);
+        rightFront.setPower(0.4);
+        sleep(700);
+        leftBack.setPower((-0.4));
+        rightBack.setPower(-0.4);
+        leftFront.setPower(-0.4);
+        rightFront.setPower(-0.4);
+        sleep(700);
+        leftBack.setPower((0));
+        rightBack.setPower(0);
+        leftFront.setPower(0);
+        rightFront.setPower(0);
+
+        // Put initialization blocks here
         waitForStart();
-
-        if (isStopRequested()) {
-            return;
-        }
-
-        // 1) Leave starting wall
-        driveBlocking(24.0, RobotConstants.AUTO_DRIVE_POWER);
-
-        // 2) Correct odometry drift using Limelight MegaTag if visible
-        robot.localization.correctOdometry();
-        robot.updateSensors();
-        telemetry.addData("Corrected pose", "x=%.1f y=%.1f h=%.1f",
-                robot.odometry.getX(), robot.odometry.getY(), robot.odometry.getHeadingDeg());
-        telemetry.update();
-
-        // 3) Optional: drive toward nearest AprilTag
-        robot.driveToAprilTag.clearTarget();
-        ElapsedGuard guard = new ElapsedGuard(4000);
-        while (opModeIsActive() && !guard.expired() && !robot.driveToAprilTag.update()) {
-            robot.updateSensors();
-            telemetry.addData("Driving to tag", "tx=%.1f", robot.limelight.getTx());
-            telemetry.update();
-        }
-        robot.drive.stop();
-
-        // 4) Raise viper and score stub
-        robot.viper.setStage(ViperArm.Stage.HIGH);
-        while (opModeIsActive() && !robot.viper.isAtTarget()) {
-            idle();
-        }
-        robot.intake.open();
-        sleep(400);
-        robot.intake.outtake();
-        sleep(600);
-        robot.intake.stop();
-        robot.intake.close();
-        robot.viper.setStage(ViperArm.Stage.STOWED);
-
-        // 5) Park
-        driveBlocking(12.0, RobotConstants.AUTO_DRIVE_POWER);
-
-        robot.stopAll();
-    }
-
-    private void driveBlocking(double inches, double power) {
-        robot.drive.driveInches(inches, power);
-        while (opModeIsActive() && robot.drive.isBusy()) {
-            robot.updateSensors();
-            idle();
-        }
-        robot.drive.finishMotion();
-    }
-
-    /** Simple millisecond timeout without importing extra utilities in the loop. */
-    private static class ElapsedGuard {
-        private final long endMs;
-
-        ElapsedGuard(long durationMs) {
-            endMs = System.currentTimeMillis() + durationMs;
-        }
-
-        boolean expired() {
-            return System.currentTimeMillis() >= endMs;
-        }
-    }
-}
+        // Put run blocks here
+        while (opModeIsActive()) {
+            // Put loop blocks here
+}}}
