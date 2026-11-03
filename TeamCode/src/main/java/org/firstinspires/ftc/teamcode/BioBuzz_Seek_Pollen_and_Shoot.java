@@ -7,7 +7,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.limelightvision.LLResult;
 
 @Autonomous(name="BioBuzz_Seek_Pollen_and_Shoot", group="Robot")
-class BioBuzzLimelightAuto extends LinearOpMode {
+public class BioBuzz_Seek_Pollen_and_Shoot extends LinearOpMode {
 
     // Hardware definitions using your exact configurations
     private DcMotor leftFront, rightFront, leftBack, rightBack;
