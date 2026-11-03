@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp(name = "Artemis main teleop", group = "TeleOp")
@@ -19,8 +20,8 @@ public class Shooter_bot extends LinearOpMode {
     private WindmillState windmillState = WindmillState.OFF;
     private ElapsedTime windmillTimer = new ElapsedTime();
 
-    private static final double WINDMILL_SPEED = -0.2;
-    private static final double TURN_DURATION = 1.5;  // seconds rotating
+    private static final double WINDMILL_SPEED = -0.30;
+    private static final double TURN_DURATION = 1.0;  // seconds rotating
     private static final double PAUSE_DURATION = 0.25; // seconds stopped
 
     // =========================
@@ -42,9 +43,8 @@ public class Shooter_bot extends LinearOpMode {
     // Outtake (hogback) velocity control.
     // true  = use encoder-based setVelocity() to hold OUTTAKE_TARGET_RPM
     // false = use the original open-loop setPower()
-    // FTC-yD2Y 37168
     private static final boolean VelocityBasedOuttake = true;
-    private static final double OUTTAKE_TARGET_RPM = 2850;
+    private static final double OUTTAKE_TARGET_RPM = 2750;
     // Set this to the encoder ticks per revolution of the hogback motor. GoBilda 5203 series motor 28 Ticks for one revolution
     private static final double HOGBACK_TICKS_PER_REV = 28;
     // Windmill won't start until the hogback is within this many RPM of the target
@@ -57,7 +57,9 @@ public class Shooter_bot extends LinearOpMode {
     // R1 toggle
     private boolean outakeSystemOn = false;
     private boolean intakeSystemOn = false;
+    private boolean reverseOuttake = false;
     private boolean lastR1 = false;
+    private boolean lastR2 = false;
     private boolean lastL1 = false;
 
     @Override
@@ -84,14 +86,13 @@ public class Shooter_bot extends LinearOpMode {
          * of init routine to be called into.
          */
 
-        // Init for the Mechanum wheels.
+        // Init for the Mecanum wheels.
 
         leftFront.setDirection(DcMotor.Direction.REVERSE);
         leftBack.setDirection(DcMotor.Direction.REVERSE);
         rightFront.setDirection(DcMotor.Direction.FORWARD);
         rightBack.setDirection(DcMotor.Direction.FORWARD);
 
-        // Braking
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -159,18 +160,11 @@ public class Shooter_bot extends LinearOpMode {
             leftBackPower /= maxPower;
             rightBackPower /= maxPower;
 
-            /*
-             * XXX: Artifically deflate the max power to make the robot go slower while we
-             * learn how to drive the robot.
-             */
             // SET DRIVE POWER
-            // XXX: Fix this. The polarity of rightFrontPower needed to be reversed to get
-            // the wheels to go straight. Look at the calculation above to make sure this does
-            // not need to be done explicitly.
-            leftFront.setPower(leftFrontPower/1.7);
-            rightFront.setPower(-rightFrontPower/1.7);
-            leftBack.setPower(leftBackPower/1.7);
-            rightBack.setPower(rightBackPower/1.7);
+            leftFront.setPower(leftFrontPower * 0.8);
+            rightFront.setPower(rightFrontPower * 0.8);
+            leftBack.setPower(leftBackPower * 0.8);
+            rightBack.setPower(rightBackPower * 0.8);
 
             /*
              * Process the input from the bumper now.
@@ -190,41 +184,25 @@ public class Shooter_bot extends LinearOpMode {
 
             // Outtake SYSTEM
             if (outakeSystemOn) {
-                // Hogback wheel
-                if (VelocityBasedOuttake) {
-                    // Convert RPM to encoder ticks per second and let the encoder hold it
-                    hogback.setVelocity(OUTTAKE_TARGET_RPM * HOGBACK_TICKS_PER_REV / 60.0);
-                } else {
-                    hogback.setPower(0.48);
+                // Emergency outtake & windmill reversal button if it jams
+                boolean currentR2 = gamepad1.a;
+                if (currentR2 && !lastR2) {
+                    reverseOuttake = !reverseOuttake;
                 }
+                lastR2 = currentR2;
 
-                // Windmill infinite rotate-stop loop
-                switch (windmillState) {
-                    case OFF:
-                        // With velocity control, wait until the hogback reaches the target RPM
-                        if (!VelocityBasedOuttake || hogbackAtTargetRpm) {
-                            windmillTimer.reset();
-                            windmillState = WindmillState.TURNING;
-                            windmillServo.setPower(WINDMILL_SPEED);
-                        }
-                        break;
-
-                    case TURNING:
-                        windmillServo.setPower(WINDMILL_SPEED);
-                        if (windmillTimer.seconds() >= TURN_DURATION) {
-                            windmillServo.setPower(0.0);
-                            windmillTimer.reset();
-                            windmillState = WindmillState.PAUSING;
-                        }
-                        break;
-
-                    case PAUSING:
-                        windmillServo.setPower(0.0);
-                        if (windmillTimer.seconds() >= PAUSE_DURATION) {
-                            windmillTimer.reset();
-                            windmillState = WindmillState.TURNING; // Loop back to turning!
-                        }
-                        break;
+                if (reverseOuttake)  {
+                    windmillServo.setPower(-1.0);
+                    hogback.setPower(-0.5);
+                } else {
+                    windmillServo.setPower(1.0);
+                    // Hogback wheel
+                    if (VelocityBasedOuttake) {
+                        // Convert RPM to encoder ticks per second and let the encoder hold it
+                        hogback.setVelocity(OUTTAKE_TARGET_RPM * HOGBACK_TICKS_PER_REV / 60.0);
+                    } else {
+                        hogback.setPower(0.8);
+                    }
                 }
             } else {
                 // Stop hogback
@@ -248,7 +226,7 @@ public class Shooter_bot extends LinearOpMode {
 
             lastL1 = currentL1;
             if (intakeSystemOn) {
-                intake.setPower(0.5);
+                intake.setPower(1.0);
                 // Continuous rotation intake servos
                 outerServoLeft.setPower(1.0);
                 outerServoRight.setPower(1.0);
