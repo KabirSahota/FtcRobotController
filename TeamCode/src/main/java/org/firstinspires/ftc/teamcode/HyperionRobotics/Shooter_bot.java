@@ -45,6 +45,7 @@ public class Shooter_bot extends LinearOpMode {
     // false = use the original open-loop setPower()
     private static final boolean VelocityBasedOuttake = true;
     private static final double OUTTAKE_TARGET_RPM = 2750;
+    private static final double OUTTAKE_STRONG_RPM = 3500;
     // Set this to the encoder ticks per revolution of the hogback motor. GoBilda 5203 series motor 28 Ticks for one revolution
     private static final double HOGBACK_TICKS_PER_REV = 28;
     // Windmill won't start until the hogback is within this many RPM of the target
@@ -58,8 +59,10 @@ public class Shooter_bot extends LinearOpMode {
     private boolean outakeSystemOn = false;
     private boolean intakeSystemOn = false;
     private boolean reverseOuttake = false;
+    private boolean StrongOuttake = false;
     private boolean lastR1 = false;
     private boolean lastR2 = false;
+    private boolean lastB2 = false;
     private boolean lastL1 = false;
 
     @Override
@@ -198,8 +201,18 @@ public class Shooter_bot extends LinearOpMode {
                     windmillServo.setPower(1.0);
                     // Hogback wheel
                     if (VelocityBasedOuttake) {
+
+                        boolean currentB2 = gamepad1.b;
+                        if (currentB2 && !lastB2) {
+                            StrongOuttake = !StrongOuttake;
+                        }
+                        lastB2 = currentB2;
                         // Convert RPM to encoder ticks per second and let the encoder hold it
-                        hogback.setVelocity(OUTTAKE_TARGET_RPM * HOGBACK_TICKS_PER_REV / 60.0);
+                        if (StrongOuttake) {
+                            hogback.setVelocity(OUTTAKE_STRONG_RPM * HOGBACK_TICKS_PER_REV / 60.0);
+                        } else {
+                            hogback.setVelocity(OUTTAKE_TARGET_RPM * HOGBACK_TICKS_PER_REV / 60.0);
+                        }
                     } else {
                         hogback.setPower(0.8);
                     }

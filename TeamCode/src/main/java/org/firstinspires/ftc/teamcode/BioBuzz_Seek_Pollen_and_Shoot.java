@@ -58,7 +58,7 @@ public class BioBuzz_Seek_Pollen_and_Shoot extends LinearOpMode {
         // Match this index with your custom Pollen pipeline (usually pipeline 0 or 1)
         limelight.pipelineSwitch(0);
 
-        telemetry.addData("Status", "Initialized. Errors fixed! Ready for BioBuzz.");
+        telemetry.addData("Status", "Initialized. Errors fixed! Ready for BioBuzz. also i like food");
         telemetry.update();
 
         waitForStart();
