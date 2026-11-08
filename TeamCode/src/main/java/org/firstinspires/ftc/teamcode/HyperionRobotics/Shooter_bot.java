@@ -17,12 +17,6 @@ public class Shooter_bot extends LinearOpMode {
         TURNING,
         PAUSING
     }
-    private WindmillState windmillState = WindmillState.OFF;
-    private ElapsedTime windmillTimer = new ElapsedTime();
-
-    private static final double WINDMILL_SPEED = -0.30;
-    private static final double TURN_DURATION = 1.0;  // seconds rotating
-    private static final double PAUSE_DURATION = 0.25; // seconds stopped
 
     // =========================
     // DRIVE MOTORS
@@ -58,11 +52,14 @@ public class Shooter_bot extends LinearOpMode {
     // R1 toggle
     private boolean outakeSystemOn = false;
     private boolean intakeSystemOn = false;
-    private boolean reverseOuttake = false;
+    private boolean reverseintakeOn = false;
     private boolean StrongOuttake = false;
+    private boolean reverseOuttake = false;
+
     private boolean lastR1 = false;
     private boolean lastR2 = false;
     private boolean lastB2 = false;
+    private boolean lastB1 = false;
     private boolean lastL1 = false;
 
     @Override
@@ -223,7 +220,6 @@ public class Shooter_bot extends LinearOpMode {
 
                 // Stop windmill CRServo and reset state
                 windmillServo.setPower(0.0);
-                windmillState = WindmillState.OFF;
 
                 // Stop continuous rotation intake servos
                 outerServoLeft.setPower(0.0);
@@ -239,10 +235,22 @@ public class Shooter_bot extends LinearOpMode {
 
             lastL1 = currentL1;
             if (intakeSystemOn) {
-                intake.setPower(1.0);
-                // Continuous rotation intake servos
-                outerServoLeft.setPower(1.0);
-                outerServoRight.setPower(1.0);
+
+                // Emergency: Reverse the intake
+                boolean currentB1 = gamepad1.x;
+                if (currentB1 && !lastB1) {
+                    reverseintakeOn = !reverseintakeOn;
+                }
+
+                lastB1 = currentB1;
+                if (reverseintakeOn) {
+                    intake.setPower(-1.0);
+                } else {
+                    intake.setPower(1.0);
+                    // Continuous rotation intake servos
+                    outerServoLeft.setPower(1.0);
+                    outerServoRight.setPower(1.0);
+                }
             } else {
                 intake.setPower(0.0);
                 outerServoLeft.setPower(0.0);
