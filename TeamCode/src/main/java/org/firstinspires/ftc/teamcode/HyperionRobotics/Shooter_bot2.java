@@ -32,8 +32,10 @@ public class Shooter_bot2 extends LinearOpMode {
         rightFront = hardwareMap.get(DcMotor.class, "rightFront");
         leftBack = hardwareMap.get(DcMotor.class, "leftBack");
         rightBack = hardwareMap.get(DcMotor.class, "rightBack");
+        intake = hardwareMap.get(DcMotor.class, "intake");
 
-         /* When the H/W gets powered up, we want it to be in a known/good state. There's a bunch of
+
+        /* When the H/W gets powered up, we want it to be in a known/good state. There's a bunch of
          * methods we can call into in order to do that. Each type of H/W part needs a different set
          * of init routine to be called into.
          */// Init for the Mecanum wheels.
@@ -128,9 +130,6 @@ public class Shooter_bot2 extends LinearOpMode {
             telemetry.addData("Front Right", rightFrontPower);
             telemetry.addData("Back Left", leftBackPower);
             telemetry.addData("Back Right", rightBackPower);
-
-
-
             telemetry.update();
         }
     }

@@ -24,7 +24,7 @@ public class BioBuzz_Seek_Pollen_and_Shoot extends LinearOpMode {
         DONE
     }
 
-    private State currentState = State.SEEK_POLLEN;
+    private State currentState = State.SHOOT_POLLEN;
 
     // Proportional constants for tracking
     private final double kP_Turn = 0.04;
@@ -63,7 +63,7 @@ public class BioBuzz_Seek_Pollen_and_Shoot extends LinearOpMode {
 
         waitForStart();
 
-        while (opModeIsActive() && currentState != State.DONE) {
+        while (opModeIsActive() && currentState != State.SHOOT_POLLEN) {
 
             // Fetch the freshest tracking result from the Limelight object
             LLResult result = limelight.getLatestResult();
