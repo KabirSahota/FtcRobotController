@@ -32,6 +32,7 @@ public class Shooter_bot extends LinearOpMode {
     // =========================
 
     private DcMotor intake;
+    private DcMotor windmillMotor;
     private DcMotorEx hogback;
 
     // Outtake (hogback) velocity control.
@@ -45,7 +46,7 @@ public class Shooter_bot extends LinearOpMode {
     // Windmill won't start until the hogback is within this many RPM of the target
     private static final double OUTTAKE_RPM_TOLERANCE = 100;
 
-    private CRServo windmillServo;
+
     private CRServo outerServoLeft;
     private CRServo outerServoRight;
 
@@ -74,7 +75,7 @@ public class Shooter_bot extends LinearOpMode {
         intake = hardwareMap.get(DcMotor.class, "intake");
         hogback = hardwareMap.get(DcMotorEx.class, "hogback");
 
-        windmillServo = hardwareMap.get(CRServo.class, "windmillServo");
+        windmillMotor = hardwareMap.get(DcMotor.class, "windmillMotor");
         outerServoLeft = hardwareMap.get(CRServo.class, "outerServoLeft");
         outerServoRight = hardwareMap.get(CRServo.class, "outerServoRight");
 
@@ -109,7 +110,7 @@ public class Shooter_bot extends LinearOpMode {
          * Servo inits are simpler. However, more advanced modes can be be programmed with the
          * servo programmer outside the code.
          */
-        windmillServo.setPower(0.0);
+        windmillMotor.setPower(0.0);
         outerServoLeft.setPower(0.0);
         outerServoRight.setPower(0.0);
 
@@ -192,10 +193,10 @@ public class Shooter_bot extends LinearOpMode {
                 lastR2 = currentR2;
 
                 if (reverseOuttake)  {
-                    windmillServo.setPower(-1.0);
+                    windmillMotor.setPower(0.6);
                     hogback.setPower(-0.5);
                 } else {
-                    windmillServo.setPower(1.0);
+                    windmillMotor.setPower(-0.6);
                     // Hogback wheel
                     if (VelocityBasedOuttake) {
 
@@ -219,7 +220,7 @@ public class Shooter_bot extends LinearOpMode {
                 hogback.setPower(0.0);
 
                 // Stop windmill CRServo and reset state
-                windmillServo.setPower(0.0);
+                windmillMotor.setPower(0.0);
 
                 // Stop continuous rotation intake servos
                 outerServoLeft.setPower(0.0);
@@ -257,7 +258,7 @@ public class Shooter_bot extends LinearOpMode {
                 outerServoRight.setPower(0.0);
             }
 
-            // =========================
+            // =========================s
             // TELEMETRY
             // =========================
 
