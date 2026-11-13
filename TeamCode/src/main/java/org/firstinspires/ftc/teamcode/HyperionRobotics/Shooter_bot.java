@@ -39,7 +39,7 @@ public class Shooter_bot extends LinearOpMode {
     // true  = use encoder-based setVelocity() to hold OUTTAKE_TARGET_RPM
     // false = use the original open-loop setPower()
     private static final boolean VelocityBasedOuttake = true;
-    private static final double OUTTAKE_TARGET_RPM = 2750;
+    private static final double OUTTAKE_TARGET_RPM = 2650;
     private static final double OUTTAKE_STRONG_RPM = 3500;
     // Set this to the encoder ticks per revolution of the hogback motor. GoBilda 5203 series motor 28 Ticks for one revolution
     private static final double HOGBACK_TICKS_PER_REV = 28;
@@ -193,10 +193,10 @@ public class Shooter_bot extends LinearOpMode {
                 lastR2 = currentR2;
 
                 if (reverseOuttake)  {
-                    windmillMotor.setPower(0.6);
+                    windmillMotor.setPower(0.3);
                     hogback.setPower(-0.5);
                 } else {
-                    windmillMotor.setPower(-0.6);
+                    windmillMotor.setPower(-0.3);
                     // Hogback wheel
                     if (VelocityBasedOuttake) {
 

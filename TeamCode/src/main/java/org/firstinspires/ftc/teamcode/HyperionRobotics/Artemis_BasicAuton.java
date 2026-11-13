@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
-@Autonomous(name = "time based Shotter", group = "autonomous")
+@Autonomous(name = "Artemis Timed Distance - Blue", group = "autonomous")
 public class Artemis_BasicAuton extends LinearOpMode {
 
 
@@ -69,9 +69,9 @@ private void drive(double power, int milliseconds) {
     stopdrive();
 }
     private void outake( int milliseconds) {
-        hogback.setPower (0.47);
+        hogback.setPower (0.45);
         sleep(2000);
-        windmillMotor.setPower (-0.6);
+        windmillMotor.setPower (-0.4);
         sleep(milliseconds);
         stopoutake();
     }
